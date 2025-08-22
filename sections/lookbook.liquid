@@ -1,0 +1,859 @@
+{%- liquid
+  assign section_id = 'lookbook-' | append: section.id
+  assign hotspot_radius = section.settings.hotspot_radius | default: 20
+  assign hotspot_color = section.settings.hotspot_color | default: '#ffffff'
+  assign hotspot_border_color = section.settings.hotspot_border_color | default: '#000000'
+  assign hotspot_animation = section.settings.hotspot_animation | default: 'pulse'
+-%}
+
+<div class="lookbook-section section-{{ section.id }}-padding" id="{{ section_id }}">
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <div class="lookbook-header text-center">
+        <h2 class="lookbook-title h1">{{ section.settings.heading }}</h2>
+        {%- if section.settings.subheading != blank -%}
+          <p class="lookbook-subtitle">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="lookbook-gallery">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'lookbook_image' -%}
+            <div class="lookbook-item" {{ block.shopify_attributes }}>
+              <div class="lookbook-image-container">
+                {%- if block.settings.image != blank -%}
+                  {%- assign image_alt = block.settings.image.alt | default: block.settings.heading | default: 'Lookbook image' -%}
+                  <img 
+                    src="{{ block.settings.image | image_url: width: 1200 }}"
+                    alt="{{ image_alt }}"
+                    class="lookbook-image"
+                    loading="lazy"
+                    width="{{ block.settings.image.width }}"
+                    height="{{ block.settings.image.height }}"
+                  >
+                  
+                  {%- if block.settings.heading != blank -%}
+                    <div class="lookbook-image-overlay">
+                      <h3 class="lookbook-image-title">{{ block.settings.heading }}</h3>
+                      {%- if block.settings.description != blank -%}
+                        <p class="lookbook-image-description">{{ block.settings.description }}</p>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+
+                  {%- comment -%} Hotspots for this image {%- endcomment -%}
+                  {%- for hotspot_block in section.blocks -%}
+                    {%- if hotspot_block.type == 'hotspot' and hotspot_block.settings.lookbook_image == block.id -%}
+                      <div 
+                        class="lookbook-hotspot hotspot-{{ hotspot_block.id }}"
+                        style="
+                          left: {{ hotspot_block.settings.position_x }}%;
+                          top: {{ hotspot_block.settings.position_y }}%;
+                          --hotspot-radius: {{ hotspot_radius }}px;
+                          --hotspot-color: {{ hotspot_color }};
+                          --hotspot-border-color: {{ hotspot_border_color }};
+                        "
+                        data-hotspot-id="{{ hotspot_block.id }}"
+                        data-product-id="{{ hotspot_block.settings.product.id }}"
+                        data-product-handle="{{ hotspot_block.settings.product.handle }}"
+                        data-product-title="{{ hotspot_block.settings.product.title }}"
+                        data-product-price="{{ hotspot_block.settings.product.price | money }}"
+                        data-product-image="{{ hotspot_block.settings.product.featured_image | image_url: width: 200 }}"
+                        data-product-url="{{ hotspot_block.settings.product.url }}"
+                      >
+                        <div class="hotspot-dot"></div>
+                        <div class="hotspot-pulse"></div>
+                        
+                        {%- if hotspot_block.settings.show_tooltip -%}
+                          <div class="hotspot-tooltip">
+                            <div class="tooltip-content">
+                              <div class="tooltip-image">
+                                <img src="{{ hotspot_block.settings.product.featured_image | image_url: width: 100 }}" alt="{{ hotspot_block.settings.product.title }}">
+                              </div>
+                              <div class="tooltip-info">
+                                <h4 class="tooltip-title">{{ hotspot_block.settings.product.title }}</h4>
+                                <p class="tooltip-price">{{ hotspot_block.settings.product.price | money }}</p>
+                                <button class="tooltip-quick-add" data-product-id="{{ hotspot_block.settings.product.id }}">
+                                  {{ 'products.product.add_to_cart' | t }}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- else -%}
+                  <div class="lookbook-placeholder">
+                    <div class="placeholder-content">
+                      <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                        <rect x="10" y="10" width="80" height="80" rx="4" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M30 40L45 55L70 30" stroke="currentColor" stroke-width="2" fill="none"/>
+                      </svg>
+                      <p>{{ 'sections.lookbook.add_image' | t }}</p>
+                    </div>
+                  </div>
+                {%- endif -%}
+              </div>
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{%- comment -%} Product Quick View Modal {%- endcomment -%}
+<div class="lookbook-modal" id="lookbook-modal-{{ section_id }}">
+  <div class="lookbook-modal-overlay"></div>
+  <div class="lookbook-modal-content">
+    <button class="lookbook-modal-close" aria-label="{{ 'general.accessibility.close' | t }}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    
+    <div class="lookbook-modal-body">
+      <div class="modal-product-image">
+        <img id="modal-product-image" src="" alt="">
+      </div>
+      <div class="modal-product-info">
+        <h3 id="modal-product-title"></h3>
+        <p id="modal-product-price" class="modal-price"></p>
+        <div id="modal-product-form" class="modal-product-form">
+          <!-- Product form will be loaded here -->
+        </div>
+        <a href="" id="modal-product-link" class="button button--primary">
+          {{ 'products.product.view_full_details' | t }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .lookbook-section {
+    padding: 4rem 0;
+  }
+
+  .lookbook-header {
+    margin-bottom: 3rem;
+  }
+
+  .lookbook-title {
+    margin-bottom: 1rem;
+  }
+
+  .lookbook-subtitle {
+    font-size: 1.1rem;
+    color: rgba(var(--color-foreground), 0.7);
+    margin: 0;
+  }
+
+  .lookbook-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .lookbook-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .lookbook-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .lookbook-image-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 125%; /* 4:5 aspect ratio */
+    overflow: hidden;
+  }
+
+  .lookbook-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .lookbook-item:hover .lookbook-image {
+    transform: scale(1.05);
+  }
+
+  .lookbook-image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+    padding: 2rem 1.5rem 1.5rem;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+
+  .lookbook-item:hover .lookbook-image-overlay {
+    transform: translateY(0);
+  }
+
+  .lookbook-image-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .lookbook-image-description {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  /* Hotspot Styles */
+  .lookbook-hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .hotspot-dot {
+    width: var(--hotspot-radius);
+    height: var(--hotspot-radius);
+    background: var(--hotspot-color);
+    border: 2px solid var(--hotspot-border-color);
+    border-radius: 50%;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hotspot-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--hotspot-radius);
+    height: var(--hotspot-radius);
+    background: var(--hotspot-color);
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: hotspot-pulse 2s infinite;
+  }
+
+  @keyframes hotspot-pulse {
+    0% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(2);
+      opacity: 0;
+    }
+  }
+
+  .hotspot-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 1rem;
+    min-width: 250px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+
+  .lookbook-hotspot:hover .hotspot-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .tooltip-content {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .tooltip-image img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .tooltip-info {
+    flex: 1;
+  }
+
+  .tooltip-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .tooltip-price {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.8rem;
+    color: rgba(var(--color-foreground), 0.7);
+  }
+
+  .tooltip-quick-add {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .tooltip-quick-add:hover {
+    background: var(--color-primary-hover);
+  }
+
+  /* Modal Styles */
+  .lookbook-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .lookbook-modal.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .lookbook-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  .lookbook-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: white;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+  }
+
+  .lookbook-modal.active .lookbook-modal-content {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .lookbook-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+    z-index: 10;
+  }
+
+  .lookbook-modal-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .lookbook-modal-body {
+    padding: 2rem;
+  }
+
+  .modal-product-image {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-product-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .modal-product-info h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+  }
+
+  .modal-price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 1.5rem 0;
+  }
+
+  .modal-product-form {
+    margin-bottom: 1.5rem;
+  }
+
+  .button--primary {
+    display: inline-block;
+    background: var(--color-primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+    text-align: center;
+  }
+
+  .button--primary:hover {
+    background: var(--color-primary-hover);
+  }
+
+  /* Placeholder */
+  .lookbook-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-content {
+    text-align: center;
+    color: rgba(var(--color-foreground), 0.5);
+  }
+
+  .placeholder-content svg {
+    margin-bottom: 1rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .lookbook-gallery {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .lookbook-section {
+      padding: 2rem 0;
+    }
+
+    .lookbook-modal-content {
+      width: 95%;
+      margin: 1rem;
+    }
+
+    .lookbook-modal-body {
+      padding: 1.5rem;
+    }
+
+    .hotspot-tooltip {
+      min-width: 200px;
+      left: 0;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  class LookbookSection {
+    constructor(sectionId) {
+      this.sectionId = sectionId;
+      this.modal = document.getElementById(`lookbook-modal-${sectionId}`);
+      this.hotspots = document.querySelectorAll(`#${sectionId} .lookbook-hotspot`);
+      this.init();
+    }
+
+    init() {
+      this.bindEvents();
+      this.initHotspots();
+    }
+
+    bindEvents() {
+      // Close modal on overlay click
+      if (this.modal) {
+        const overlay = this.modal.querySelector('.lookbook-modal-overlay');
+        const closeBtn = this.modal.querySelector('.lookbook-modal-close');
+        
+        if (overlay) {
+          overlay.addEventListener('click', () => this.closeModal());
+        }
+        
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => this.closeModal());
+        }
+      }
+
+      // Close modal on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.modal && this.modal.classList.contains('active')) {
+          this.closeModal();
+        }
+      });
+    }
+
+    initHotspots() {
+      this.hotspots.forEach(hotspot => {
+        hotspot.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.handleHotspotClick(hotspot);
+        });
+      });
+    }
+
+    handleHotspotClick(hotspot) {
+      const productId = hotspot.dataset.productId;
+      const productHandle = hotspot.dataset.productHandle;
+      
+      if (productId && productHandle) {
+        this.showProductModal(hotspot);
+      }
+    }
+
+    async showProductModal(hotspot) {
+      if (!this.modal) return;
+
+      const productId = hotspot.dataset.productId;
+      const productHandle = hotspot.dataset.productHandle;
+      
+      // Update modal content
+      this.updateModalContent(hotspot);
+      
+      // Show modal
+      this.modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      // Load product form if needed
+      if (productId) {
+        await this.loadProductForm(productId);
+      }
+    }
+
+    updateModalContent(hotspot) {
+      const modalImage = this.modal.querySelector('#modal-product-image');
+      const modalTitle = this.modal.querySelector('#modal-product-title');
+      const modalPrice = this.modal.querySelector('#modal-product-price');
+      const modalLink = this.modal.querySelector('#modal-product-link');
+
+      if (modalImage) modalImage.src = hotspot.dataset.productImage;
+      if (modalTitle) modalTitle.textContent = hotspot.dataset.productTitle;
+      if (modalPrice) modalPrice.textContent = hotspot.dataset.productPrice;
+      if (modalLink) modalLink.href = hotspot.dataset.productUrl;
+    }
+
+    async loadProductForm(productId) {
+      const formContainer = this.modal.querySelector('#modal-product-form');
+      if (!formContainer) return;
+
+      try {
+        // Fetch product form from Shopify
+        const response = await fetch(`/products/${productId}.js`);
+        const product = await response.json();
+        
+        // Create a simple add to cart form
+        formContainer.innerHTML = `
+          <form class="product-form" data-product-id="${productId}">
+            <div class="form-row">
+              <label for="quantity-${productId}">Quantity:</label>
+              <input type="number" id="quantity-${productId}" name="quantity" value="1" min="1" class="quantity-input">
+            </div>
+            <button type="submit" class="button button--primary add-to-cart-btn">
+              Add to Cart
+            </button>
+          </form>
+        `;
+
+        // Bind form submission
+        const form = formContainer.querySelector('.product-form');
+        form.addEventListener('submit', (e) => this.handleAddToCart(e, productId));
+        
+      } catch (error) {
+        console.error('Error loading product form:', error);
+        formContainer.innerHTML = '<p>Unable to load product form. Please visit the product page.</p>';
+      }
+    }
+
+    async handleAddToCart(e, productId) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const quantity = form.querySelector('.quantity-input').value;
+      const submitBtn = form.querySelector('.add-to-cart-btn');
+      
+      submitBtn.textContent = 'Adding...';
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: productId,
+            quantity: parseInt(quantity)
+          })
+        });
+
+        if (response.ok) {
+          submitBtn.textContent = 'Added to Cart!';
+          
+          // Update cart count if cart icon exists
+          this.updateCartCount();
+          
+          // Reset button after delay
+          setTimeout(() => {
+            submitBtn.textContent = 'Add to Cart';
+            submitBtn.disabled = false;
+          }, 2000);
+        } else {
+          throw new Error('Failed to add to cart');
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        submitBtn.textContent = 'Error - Try Again';
+        submitBtn.disabled = false;
+        
+        setTimeout(() => {
+          submitBtn.textContent = 'Add to Cart';
+          submitBtn.disabled = false;
+        }, 3000);
+      }
+    }
+
+    updateCartCount() {
+      // Update cart count if cart icon exists
+      const cartIcon = document.querySelector('.cart-icon-bubble');
+      if (cartIcon) {
+        // Trigger cart update event
+        document.dispatchEvent(new CustomEvent('cart:refresh'));
+      }
+    }
+
+    closeModal() {
+      if (this.modal) {
+        this.modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+  }
+
+  // Initialize lookbook sections when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const lookbookSections = document.querySelectorAll('.lookbook-section');
+    lookbookSections.forEach(section => {
+      const sectionId = section.id;
+      new LookbookSection(sectionId);
+    });
+  });
+
+  // Initialize lookbook sections for Shopify section rendering
+  if (typeof Shopify !== 'undefined' && Shopify.onBlockChange) {
+    Shopify.onBlockChange = function(event) {
+      if (event.target.classList.contains('lookbook-section')) {
+        const sectionId = event.target.id;
+        new LookbookSection(sectionId);
+      }
+    };
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Lookbook",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Lookbook"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Discover our latest collection in lifestyle settings"
+    },
+    {
+      "type": "range",
+      "id": "hotspot_radius",
+      "min": 15,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Hotspot Size",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "hotspot_color",
+      "label": "Hotspot Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "hotspot_border_color",
+      "label": "Hotspot Border Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "hotspot_animation",
+      "label": "Hotspot Animation",
+      "options": [
+        {
+          "value": "pulse",
+          "label": "Pulse"
+        },
+        {
+          "value": "bounce",
+          "label": "Bounce"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "pulse"
+    },
+    {
+      "type": "header",
+      "content": "Section Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "lookbook_image",
+      "name": "Lookbook Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Image Title"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "hotspot",
+      "name": "Product Hotspot",
+      "settings": [
+        {
+          "type": "select",
+          "id": "lookbook_image",
+          "label": "Attach to Image",
+          "options": [],
+          "info": "Select which lookbook image this hotspot belongs to"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "range",
+          "id": "position_x",
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%",
+          "label": "Horizontal Position",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "position_y",
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%",
+          "label": "Vertical Position",
+          "default": 50
+        },
+        {
+          "type": "checkbox",
+          "id": "show_tooltip",
+          "label": "Show Tooltip on Hover",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Lookbook",
+      "blocks": [
+        {
+          "type": "lookbook_image"
+        },
+        {
+          "type": "hotspot"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

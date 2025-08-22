@@ -287,7 +287,13 @@
       "added_to_cart": "Added to cart",
       "add_to_cart_error": "Error adding to cart",
       "sold_out": "Sold out",
-      "unavailable": "Unavailable"
+      "unavailable": "Unavailable",
+      "view_full_details": "View Full Details"
+    }
+  },
+  "sections": {
+    "lookbook": {
+      "add_image": "Add an image to get started"
     }
   }
 }

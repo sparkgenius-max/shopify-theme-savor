@@ -1,0 +1,86 @@
+{
+  "sections": {
+    "lookbook_header": {
+      "type": "lookbook",
+      "settings": {
+        "heading": "Spring Collection Lookbook",
+        "subheading": "Discover our latest styles in beautiful lifestyle settings",
+        "hotspot_radius": 22,
+        "hotspot_color": "#ffffff",
+        "hotspot_border_color": "#a42325",
+        "hotspot_animation": "pulse",
+        "padding_top": 40,
+        "padding_bottom": 40
+      },
+      "blocks": {
+        "lookbook_image_1": {
+          "type": "lookbook_image",
+          "settings": {
+            "image": "",
+            "heading": "Urban Street Style",
+            "description": "Perfect for city adventures and casual outings"
+          }
+        },
+        "hotspot_1": {
+          "type": "hotspot",
+          "settings": {
+            "lookbook_image": "lookbook_image_1",
+            "product": "",
+            "position_x": 35,
+            "position_y": 45,
+            "show_tooltip": true
+          }
+        },
+        "hotspot_2": {
+          "type": "hotspot",
+          "settings": {
+            "lookbook_image": "lookbook_image_1",
+            "product": "",
+            "position_x": 65,
+            "position_y": 60,
+            "show_tooltip": true
+          }
+        },
+        "lookbook_image_2": {
+          "type": "lookbook_image",
+          "settings": {
+            "image": "",
+            "heading": "Weekend Getaway",
+            "description": "Comfortable and stylish for weekend adventures"
+          }
+        },
+        "hotspot_3": {
+          "type": "hotspot",
+          "settings": {
+            "lookbook_image": "lookbook_image_2",
+            "product": "",
+            "position_x": 25,
+            "position_y": 40,
+            "show_tooltip": true
+          }
+        },
+        "hotspot_4": {
+          "type": "hotspot",
+          "settings": {
+            "lookbook_image": "lookbook_image_2",
+            "product": "",
+            "position_x": 70,
+            "position_y": 55,
+            "show_tooltip": true
+          }
+        }
+      },
+      "block_order": [
+        "lookbook_image_1",
+        "hotspot_1",
+        "hotspot_2",
+        "lookbook_image_2",
+        "hotspot_3",
+        "hotspot_4"
+      ]
+    }
+  },
+  "order": [
+    "lookbook_header"
+  ]
+}
