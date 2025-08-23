@@ -44,8 +44,9 @@
                   {%- endif -%}
 
                   {%- comment -%} Hotspots for this image {%- endcomment -%}
+                  {%- assign image_index = forloop.index -%}
                   {%- for hotspot_block in section.blocks -%}
-                    {%- if hotspot_block.type == 'hotspot' and hotspot_block.settings.lookbook_image == block.id -%}
+                    {%- if hotspot_block.type == 'hotspot' and hotspot_block.settings.lookbook_image == 'lookbook_image_' | append: image_index -%}
                       <div 
                         class="lookbook-hotspot hotspot-{{ hotspot_block.id }}"
                         style="
