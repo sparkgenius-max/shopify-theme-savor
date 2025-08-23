@@ -6,7 +6,8 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */{
+ */
+{
   "sections": {
     "hero_RkimKJ": {
       "type": "hero",
@@ -14,6 +15,7 @@
         "group_3cB4GW": {
           "type": "group",
           "settings": {
+            "link": "",
             "open_in_new_tab": false,
             "content_direction": "column",
             "vertical_on_mobile": true,
@@ -38,6 +40,7 @@
             "border_width": 1,
             "border_opacity": 100,
             "border_radius": 0,
+            "placeholder": "",
             "toggle_overlay": false,
             "overlay_color": "#00000026",
             "overlay_style": "solid",
@@ -100,6 +103,7 @@
       "settings": {
         "media_type_1": "image",
         "media_type_2": "image",
+        "link": "",
         "open_in_new_tab": false,
         "content_direction": "column",
         "vertical_on_mobile": true,
@@ -121,6 +125,41 @@
         "reflection_opacity": 75,
         "padding-block-start": 0,
         "padding-block-end": 0
+      }
+    },
+    "lookbook_section_z6Lah4": {
+      "type": "lookbook-section",
+      "blocks": {
+        "product_VdY7fQ": {
+          "type": "product",
+          "settings": {
+            "product": "ruby-refresher",
+            "description": "",
+            "horizontal": 49,
+            "vertical": 66
+          }
+        }
+      },
+      "block_order": [
+        "product_VdY7fQ"
+      ],
+      "name": "Lookbook section",
+      "settings": {
+        "image": "shopify://shop_images/SEOon_Wind_Down.png",
+        "text_size": 100,
+        "show_toggle_element": true,
+        "Icon-color": "#c94040",
+        "pin_highlight_color": "#ffffff",
+        "text_color": "#102225",
+        "text_background_color": "#FFFFFF",
+        "section_width": "full",
+        "inner_padding": 40,
+        "outer_margin": 0,
+        "custom_css": "",
+        "mobile_custom_css": "",
+        "override_theme_font": true,
+        "heading_font": "serif",
+        "main_font": "system_ui_n4"
       }
     },
     "product_list_X8Q7bi": {
@@ -198,6 +237,7 @@
               "type": "_product-card-group",
               "name": "t:names.group",
               "settings": {
+                "link": "",
                 "open_in_new_tab": false,
                 "content_direction": "column",
                 "vertical_on_mobile": true,
@@ -236,6 +276,7 @@
                   "type": "_product-card-group",
                   "name": "t:names.group",
                   "settings": {
+                    "link": "",
                     "open_in_new_tab": false,
                     "content_direction": "row",
                     "vertical_on_mobile": true,
@@ -328,6 +369,7 @@
                   "type": "_product-card-group",
                   "name": "t:names.group",
                   "settings": {
+                    "link": "",
                     "open_in_new_tab": false,
                     "content_direction": "column",
                     "vertical_on_mobile": true,
@@ -457,6 +499,7 @@
           "type": "group",
           "name": "Caption",
           "settings": {
+            "link": "",
             "open_in_new_tab": false,
             "content_direction": "column",
             "vertical_on_mobile": true,
@@ -481,6 +524,7 @@
             "border_width": 1,
             "border_opacity": 100,
             "border_radius": 0,
+            "placeholder": "",
             "toggle_overlay": false,
             "overlay_color": "#00000026",
             "overlay_style": "solid",
@@ -586,6 +630,7 @@
   },
   "order": [
     "hero_RkimKJ",
+    "lookbook_section_z6Lah4",
     "product_list_X8Q7bi",
     "section_RhpYRt"
   ]
